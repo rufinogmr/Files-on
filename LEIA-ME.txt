@@ -2,15 +2,16 @@
 FILES-ON - Organizador Inteligente de Comprovantes
 ================================================
 
-INSTALACAO SUPER FACIL:
-=======================
+INSTALACAO SUPER FACIL (3 PASSOS):
+===================================
 
-1. Clique direito em "instalar-dependencias.ps1"
-2. Selecione "Executar com PowerShell"
-3. Se pedir, confirme "Sim" para executar como Administrador
-4. Siga as instrucoes na tela
-5. Reinicie o computador
-6. Clique duas vezes em "Files-On.exe"
+1. Clique DIREITO em "INSTALAR-DUPLO-CLIQUE.bat"
+2. Escolha "Executar como administrador"
+3. Siga as instrucoes na tela (vai abrir paginas de download)
+
+Depois de instalar:
+4. Reinicie o computador
+5. Clique no icone "Files-On" na Area de Trabalho
 
 PRONTO! O aplicativo vai abrir!
 
