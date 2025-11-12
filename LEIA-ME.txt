@@ -1,0 +1,67 @@
+================================================
+FILES-ON - Organizador Inteligente de Comprovantes
+================================================
+
+INSTALACAO SUPER FACIL:
+=======================
+
+1. Clique direito em "instalar-dependencias.ps1"
+2. Selecione "Executar com PowerShell"
+3. Se pedir, confirme "Sim" para executar como Administrador
+4. Siga as instrucoes na tela
+5. Reinicie o computador
+6. Clique duas vezes em "Files-On.exe"
+
+PRONTO! O aplicativo vai abrir!
+
+
+SE DER ERRO "Script desabilitado":
+===================================
+
+1. Abra PowerShell como Administrador:
+   - Pressione Win + X
+   - Escolha "Windows PowerShell (Admin)"
+
+2. Digite este comando:
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+3. Confirme com "S" (Sim)
+
+4. Tente executar o instalador novamente
+
+
+COMO USAR O FILES-ON:
+======================
+
+1. Clique em "Selecionar Arquivos" ou "Selecionar Pasta"
+2. Escolha os comprovantes (PDFs ou imagens)
+3. Clique em "Processar Arquivos"
+4. Aguarde o processamento (veja a barra de progresso!)
+5. Clique em "Organizar Arquivos"
+6. Escolha onde salvar os arquivos organizados
+7. Pronto! Seus comprovantes foram organizados automaticamente!
+
+
+O QUE O APLICATIVO FAZ:
+========================
+
+- Le texto de PDFs e imagens (OCR)
+- Encontra data, nome e valor em comprovantes
+- Detecta arquivos duplicados
+- Sugere nomes descritivos para arquivos
+- Organiza tudo em pastas por ano/mes
+- Gera relatorios detalhados
+
+
+PROBLEMAS?
+==========
+
+- Se o app nao abrir, desabilite o antivirus temporariamente
+- Se der erro de OCR, reinstale o Tesseract
+- Se nao processar PDFs, reinstale o Poppler
+- Para mais ajuda, consulte INSTALACAO_SIMPLES.md
+
+
+================================================
+Desenvolvido com Python + Tesseract OCR
+================================================
