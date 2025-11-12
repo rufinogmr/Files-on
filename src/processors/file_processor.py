@@ -2,6 +2,7 @@
 File Processor - Handles text extraction from PDFs and images
 """
 import os
+import sys
 import hashlib
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -20,6 +21,39 @@ class FileProcessor:
 
     def __init__(self):
         self.processed_files = []
+        self._configure_dependencies()
+
+    def _configure_dependencies(self):
+        """Configure Tesseract and Poppler paths automatically (Windows fix)"""
+        if sys.platform == 'win32':
+            # Configure Tesseract
+            tesseract_paths = [
+                r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+                r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+                os.path.join(os.getenv('LOCALAPPDATA', ''), 'Programs', 'Tesseract-OCR', 'tesseract.exe')
+            ]
+
+            for path in tesseract_paths:
+                if os.path.exists(path):
+                    pytesseract.pytesseract.tesseract_cmd = path
+                    print(f"✓ Tesseract encontrado: {path}")
+                    break
+
+            # Configure Poppler - Add to PATH if found
+            poppler_paths = [
+                r'C:\Program Files\poppler\Library\bin',
+                r'C:\Program Files (x86)\poppler\Library\bin',
+                r'C:\poppler\Library\bin',
+                os.path.join(os.getenv('LOCALAPPDATA', ''), 'Programs', 'poppler', 'Library', 'bin')
+            ]
+
+            for path in poppler_paths:
+                if os.path.exists(path):
+                    # Add to PATH temporarily for this session
+                    if path not in os.environ['PATH']:
+                        os.environ['PATH'] = path + os.pathsep + os.environ['PATH']
+                        print(f"✓ Poppler encontrado: {path}")
+                    break
 
     def is_supported_file(self, file_path: str) -> bool:
         """Check if file format is supported"""
