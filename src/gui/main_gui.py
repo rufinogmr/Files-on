@@ -2,7 +2,8 @@
 Main GUI - Interactive graphical interface for file processing
 """
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
+import tkinter.ttk as ttk
+from tkinter import filedialog, messagebox, scrolledtext
 import threading
 import time
 import os
