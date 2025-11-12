@@ -12,23 +12,11 @@ pip install pyinstaller
 
 echo [3/4] Construindo executavel...
 echo Isso pode levar alguns minutos...
-pyinstaller --name="Files-On" ^
-    --onefile ^
-    --windowed ^
-    --icon=NONE ^
-    --add-data "src;src" ^
-    --hidden-import=tkinter ^
-    --hidden-import=tkinter.ttk ^
-    --hidden-import=tkinter.filedialog ^
-    --hidden-import=tkinter.messagebox ^
-    --hidden-import=tkinter.scrolledtext ^
-    --hidden-import=PIL._tkinter_finder ^
-    main.py
+pyinstaller Files-On.spec
 
 echo.
 echo [4/4] Limpando arquivos temporarios...
 rmdir /s /q build
-del /q Files-On.spec
 
 echo.
 echo ================================================
