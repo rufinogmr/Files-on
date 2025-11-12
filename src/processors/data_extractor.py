@@ -32,6 +32,58 @@ class DataExtractor:
         r'^([A-ZÀ-Ú][A-Za-zÀ-úà-ú\s]{3,50})$',  # Capitalized name on its own line
     ]
 
+    # Document type classification keywords (ordered by priority)
+    DOCUMENT_TYPES = {
+        'Nota_Fiscal': [
+            'nota fiscal', 'nf-e', 'nfe', 'danfe', 'cupom fiscal',
+            'emitente', 'destinatário', 'icms', 'natureza da operação'
+        ],
+        'Fatura': [
+            'fatura', 'boleto', 'cobrança', 'vencimento', 'nosso número',
+            'código de barras', 'linha digitável', 'valor do documento'
+        ],
+        'Recibo': [
+            'recibo', 'comprovante de pagamento', 'quitação',
+            'recebi de', 'importância de', 'em dinheiro'
+        ],
+        'Contrato': [
+            'contrato', 'contratante', 'contratado', 'cláusula',
+            'partes', 'acordo', 'termos e condições'
+        ],
+        'Comprovante_Bancário': [
+            'comprovante', 'transferência', 'pix', 'ted', 'doc',
+            'banco', 'agência', 'conta corrente', 'autenticação bancária'
+        ],
+        'Ordem_Serviço': [
+            'ordem de serviço', 'os', 'serviço executado',
+            'mão de obra', 'execução', 'prestação de serviço'
+        ],
+        'Orçamento': [
+            'orçamento', 'cotação', 'proposta', 'validade',
+            'estimativa', 'previsão de custo'
+        ],
+        'Declaração': [
+            'declaração', 'declaro', 'atesto', 'certifico',
+            'para os devidos fins'
+        ],
+        'Certidão': [
+            'certidão', 'certifica', 'registro', 'cartório',
+            'tabelião', 'oficial'
+        ],
+        'RG': [
+            'cédula de identidade', 'rg', 'registro geral',
+            'secretaria de segurança pública', 'documento de identidade'
+        ],
+        'CPF': [
+            'cadastro de pessoas físicas', 'cpf', 'receita federal',
+            'situação cadastral'
+        ],
+        'CNH': [
+            'carteira nacional de habilitação', 'cnh', 'habilitação',
+            'detran', 'categoria'
+        ],
+    }
+
     def __init__(self):
         pass
 
@@ -122,11 +174,39 @@ class DataExtractor:
         }
         return text.lower() in noise_words
 
+    def classify_document_type(self, text: str) -> Tuple[str, int]:
+        """
+        Classify document type based on keywords in text.
+        Returns tuple of (document_type, confidence_score)
+        """
+        if not text:
+            return ('Outros', 0)
+
+        text_lower = text.lower()
+        best_match = 'Outros'
+        best_score = 0
+
+        # Check each document type and count keyword matches
+        for doc_type, keywords in self.DOCUMENT_TYPES.items():
+            score = 0
+            for keyword in keywords:
+                # Count occurrences of each keyword
+                count = text_lower.count(keyword.lower())
+                score += count
+
+            # Update best match if this type has more keyword matches
+            if score > best_score:
+                best_score = score
+                best_match = doc_type
+
+        return (best_match, best_score)
+
     def extract_data(self, text: str) -> Dict:
         """Extract all structured data from text"""
         values = self.extract_values(text)
         dates = self.extract_dates(text)
         names = self.extract_names(text)
+        doc_type, confidence = self.classify_document_type(text)
 
         result = {
             'values': values,
@@ -135,6 +215,8 @@ class DataExtractor:
             'primary_date': dates[0] if dates else None,
             'names': names,
             'primary_name': names[0] if names else None,
+            'document_type': doc_type,
+            'type_confidence': confidence,
         }
 
         return result
