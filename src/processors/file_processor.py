@@ -4,6 +4,8 @@ File Processor - Handles text extraction from PDFs and images
 import os
 import sys
 import hashlib
+import warnings
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
@@ -11,6 +13,13 @@ import pytesseract
 import pdfplumber
 from pdf2image import convert_from_path
 import PyPDF2
+
+# Suppress FontBBox warnings from pdfminer
+warnings.filterwarnings('ignore', message='.*FontBBox.*')
+warnings.filterwarnings('ignore', message='.*cannot be parsed as 4 floats.*')
+
+# Also suppress pdfminer logging warnings
+logging.getLogger('pdfminer').setLevel(logging.ERROR)
 
 
 class FileProcessor:
@@ -89,11 +98,14 @@ class FileProcessor:
 
         # Try text extraction first (for PDFs with selectable text)
         try:
-            with pdfplumber.open(pdf_path) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text + "\n"
+            # Suppress all warnings during PDF processing
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                with pdfplumber.open(pdf_path) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
         except Exception as e:
             print(f"Error with pdfplumber on {pdf_path}: {e}")
 
