@@ -18,6 +18,10 @@ pyinstaller --name="Files-On" ^
     --icon=NONE ^
     --add-data "src;src" ^
     --hidden-import=tkinter ^
+    --hidden-import=tkinter.ttk ^
+    --hidden-import=tkinter.filedialog ^
+    --hidden-import=tkinter.messagebox ^
+    --hidden-import=tkinter.scrolledtext ^
     --hidden-import=PIL._tkinter_finder ^
     main.py
 
