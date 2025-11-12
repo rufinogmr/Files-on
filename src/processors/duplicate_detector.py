@@ -11,14 +11,16 @@ from difflib import SequenceMatcher
 class DuplicateDetector:
     """Detects duplicate files using multiple strategies"""
 
-    def __init__(self, similarity_threshold: float = 0.85):
+    def __init__(self, similarity_threshold: float = 0.85, enable_similarity_check: bool = False):
         """
         Initialize duplicate detector
 
         Args:
             similarity_threshold: Text similarity threshold (0.0 to 1.0)
+            enable_similarity_check: Enable slow similarity checking (default: False)
         """
         self.similarity_threshold = similarity_threshold
+        self.enable_similarity_check = enable_similarity_check
 
     def find_exact_duplicates(self, processed_files: List[Dict]) -> Dict[str, List[Dict]]:
         """Find exact duplicates based on file hash"""
@@ -110,7 +112,11 @@ class DuplicateDetector:
     def generate_duplicate_report(self, processed_files: List[Dict]) -> Dict:
         """Generate comprehensive duplicate detection report"""
         exact_duplicates = self.find_exact_duplicates(processed_files)
-        similar_files = self.find_similar_files(processed_files)
+
+        # Only check similarity if enabled (slow operation)
+        similar_files = []
+        if self.enable_similarity_check:
+            similar_files = self.find_similar_files(processed_files)
 
         # Count statistics
         total_files = len([f for f in processed_files if f.get('success')])

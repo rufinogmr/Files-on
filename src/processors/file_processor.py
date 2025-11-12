@@ -2,7 +2,10 @@
 File Processor - Handles text extraction from PDFs and images
 """
 import os
+import sys
 import hashlib
+import warnings
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from PIL import Image
@@ -10,6 +13,13 @@ import pytesseract
 import pdfplumber
 from pdf2image import convert_from_path
 import PyPDF2
+
+# Suppress FontBBox warnings from pdfminer
+warnings.filterwarnings('ignore', message='.*FontBBox.*')
+warnings.filterwarnings('ignore', message='.*cannot be parsed as 4 floats.*')
+
+# Also suppress pdfminer logging warnings
+logging.getLogger('pdfminer').setLevel(logging.ERROR)
 
 
 class FileProcessor:
@@ -20,6 +30,39 @@ class FileProcessor:
 
     def __init__(self):
         self.processed_files = []
+        self._configure_dependencies()
+
+    def _configure_dependencies(self):
+        """Configure Tesseract and Poppler paths automatically (Windows fix)"""
+        if sys.platform == 'win32':
+            # Configure Tesseract
+            tesseract_paths = [
+                r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+                r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+                os.path.join(os.getenv('LOCALAPPDATA', ''), 'Programs', 'Tesseract-OCR', 'tesseract.exe')
+            ]
+
+            for path in tesseract_paths:
+                if os.path.exists(path):
+                    pytesseract.pytesseract.tesseract_cmd = path
+                    print(f"✓ Tesseract encontrado: {path}")
+                    break
+
+            # Configure Poppler - Add to PATH if found
+            poppler_paths = [
+                r'C:\Program Files\poppler\Library\bin',
+                r'C:\Program Files (x86)\poppler\Library\bin',
+                r'C:\poppler\Library\bin',
+                os.path.join(os.getenv('LOCALAPPDATA', ''), 'Programs', 'poppler', 'Library', 'bin')
+            ]
+
+            for path in poppler_paths:
+                if os.path.exists(path):
+                    # Add to PATH temporarily for this session
+                    if path not in os.environ['PATH']:
+                        os.environ['PATH'] = path + os.pathsep + os.environ['PATH']
+                        print(f"✓ Poppler encontrado: {path}")
+                    break
 
     def is_supported_file(self, file_path: str) -> bool:
         """Check if file format is supported"""
@@ -55,11 +98,14 @@ class FileProcessor:
 
         # Try text extraction first (for PDFs with selectable text)
         try:
-            with pdfplumber.open(pdf_path) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text + "\n"
+            # Suppress all warnings during PDF processing
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                with pdfplumber.open(pdf_path) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
         except Exception as e:
             print(f"Error with pdfplumber on {pdf_path}: {e}")
 

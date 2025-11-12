@@ -31,9 +31,17 @@ class SuggestionEngine:
     def generate_filename(self, extracted_data: Dict, original_filename: str) -> str:
         """
         Generate a suggested filename based on extracted data
-        Format: YYYY-MM-DD_Name_Value.ext
+        Format: TipoDoc_YYYY-MM-DD_Nome_Valor.ext
+        If no date: TipoDoc_Nome_Valor.ext
         """
         parts = []
+
+        # Add document type (always first)
+        doc_type = extracted_data.get('document_type', 'Doc')
+        # Shorten type name if too long
+        if len(doc_type) > 15:
+            doc_type = doc_type[:15]
+        parts.append(doc_type)
 
         # Add date
         if extracted_data.get('primary_date'):
@@ -47,7 +55,12 @@ class SuggestionEngine:
             name_parts = name.split()
             if len(name_parts) > 2:
                 name = f"{name_parts[0]} {name_parts[-1]}"
+            elif len(name_parts) == 1:
+                name = name_parts[0]
             name = self.sanitize_filename(name)
+            # Limit name length
+            if len(name) > 30:
+                name = name[:30]
             parts.append(name)
 
         # Add value
@@ -56,9 +69,11 @@ class SuggestionEngine:
             value_str = f"R${value:.2f}".replace('.', ',')
             parts.append(value_str)
 
-        # If no data extracted, use original filename
-        if not parts:
-            return original_filename
+        # If only document type was added, use original filename with type prefix
+        if len(parts) == 1:
+            base_name = Path(original_filename).stem
+            ext = Path(original_filename).suffix
+            return f"{doc_type}_{base_name}{ext}"
 
         # Join parts and add original extension
         ext = Path(original_filename).suffix
@@ -69,27 +84,21 @@ class SuggestionEngine:
     def suggest_folder_structure(self, extraction_results: List[Dict]) -> Dict[str, List[Dict]]:
         """
         Suggest folder organization based on extracted data
-        Organizes by Year/Month
+        Organizes by Document Type (Nota_Fiscal, Recibo, Fatura, etc.)
         """
         folder_structure = defaultdict(list)
 
         for result in extraction_results:
             if not result.get('success'):
-                # Put unsuccessful extractions in "Unprocessed" folder
+                # Put unsuccessful extractions in "Sem_Classificacao" folder
                 folder_structure['Sem_Classificacao'].append(result)
                 continue
 
             extracted_data = result.get('extracted_data', {})
-            primary_date = extracted_data.get('primary_date')
+            doc_type = extracted_data.get('document_type', 'Outros')
 
-            if primary_date:
-                # Organize by Year/Month
-                year = primary_date.strftime('%Y')
-                month = primary_date.strftime('%m_%B')  # 01_January
-                folder_path = f"{year}/{month}"
-            else:
-                # No date found - put in "Sem_Data" folder
-                folder_path = "Sem_Data"
+            # Organize by document type
+            folder_path = doc_type
 
             folder_structure[folder_path].append(result)
 
